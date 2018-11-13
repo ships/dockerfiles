@@ -1,0 +1,30 @@
+---
+resources:
+- name: this
+  type: git
+  source:
+    uri: https://github.com/ships/dockerfiles
+
+- name: base-ubuntu
+  type: docker-image
+  source:
+    repository: ubuntu
+
+- name: ubuntu-git
+  type: docker-image
+  source:
+    repository: jraqula/ubuntu-git
+    username: ((dockerhub_user.username))
+    password: ((dockerhub_user.password))
+
+jobs:
+- name: rebuild-ubuntu-git
+  plan:
+  - aggregate:
+    - get: base-ubuntu
+      trigger: true
+    - get: this
+      trigger: true
+  - put: ubuntu-git
+    params:
+      build: this/ubuntu-git

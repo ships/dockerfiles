@@ -1,4 +1,4 @@
 FROM ubuntu:latest
 
-RUN apt update
-RUN apt install git && apt autoremove
+RUN apt-get -y update
+RUN apt-get -y install git && apt-get -y autoremove
