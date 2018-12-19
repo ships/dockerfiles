@@ -6,12 +6,25 @@ resources:
     uri: https://github.com/ships/dockerfiles
     paths: [ubuntu-git]
 
+- name: this-jq
+  type: git
+  source:
+    uri: https://github.com/ships/dockerfiles
+    paths: [ubuntu-jq]
+
 - name: base-ubuntu
   type: docker-image
   source:
     repository: ubuntu
 
 - name: ubuntu-git
+  type: docker-image
+  source:
+    repository: jraqula/ubuntu-jq
+    username: ((dockerhub_user.username))
+    password: ((dockerhub_user.password))
+
+- name: ubuntu-jq
   type: docker-image
   source:
     repository: jraqula/ubuntu-git
@@ -30,3 +43,15 @@ jobs:
   - put: ubuntu-git
     params:
       build: this/ubuntu-git
+
+- name: rebuild-ubuntu-jq
+  plan:
+  - aggregate:
+    - get: base-ubuntu
+      trigger: true
+    - get: this
+      resource: this-jq
+      trigger: true
+  - put: ubuntu-jq
+    params:
+      build: this/ubuntu-jq
