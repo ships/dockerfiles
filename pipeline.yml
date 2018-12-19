@@ -1,9 +1,10 @@
 ---
 resources:
-- name: this
+- name: this-git
   type: git
   source:
     uri: https://github.com/ships/dockerfiles
+    paths: [ubuntu-git]
 
 - name: base-ubuntu
   type: docker-image
@@ -24,6 +25,7 @@ jobs:
     - get: base-ubuntu
       trigger: true
     - get: this
+      resource: this-git
       trigger: true
   - put: ubuntu-git
     params:
