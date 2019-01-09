@@ -17,14 +17,14 @@ resources:
   source:
     repository: ubuntu
 
-- name: ubuntu-git
+- name: ubuntu-jq
   type: docker-image
   source:
     repository: jraqula/ubuntu-jq
     username: ((dockerhub_user.username))
     password: ((dockerhub_user.password))
 
-- name: ubuntu-jq
+- name: ubuntu-git
   type: docker-image
   source:
     repository: jraqula/ubuntu-git
