@@ -34,7 +34,7 @@ resources:
 jobs:
 - name: rebuild-ubuntu-git
   plan:
-  - aggregate:
+  - in_parallel:
     - get: base-ubuntu
       trigger: true
     - get: this
@@ -46,7 +46,7 @@ jobs:
 
 - name: rebuild-ubuntu-jq
   plan:
-  - aggregate:
+  - in_parallel:
     - get: base-ubuntu
       trigger: true
     - get: this
