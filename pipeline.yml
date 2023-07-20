@@ -12,46 +12,73 @@ resources:
     uri: https://github.com/ships/dockerfiles
     paths: [ubuntu-jq]
 
+- name: concourse-generics
+  type: git
+  source:
+    uri: https://github.com/ships/concourse-generics
+
 - name: base-ubuntu
-  type: docker-image
+  type: registry-image
   source:
     repository: ubuntu
+    tag: "20.04"
+    username: ((dockerhub-ships.username))
+    password: ((dockerhub-ships.password))
 
 - name: ubuntu-jq
-  type: docker-image
+  type: registry-image
   source:
     repository: eveships/ubuntu-jq
-    username: ((dockerhub_ships.username))
-    password: ((dockerhub_ships.password))
+    tag: latest
+    username: ((dockerhub-ships.username))
+    password: ((dockerhub-ships.password))
 
 - name: ubuntu-git
-  type: docker-image
+  type: registry-image
   source:
     repository: eveships/ubuntu-git
-    username: ((dockerhub_ships.username))
-    password: ((dockerhub_ships.password))
+    tag: latest
+    username: ((dockerhub-ships.username))
+    password: ((dockerhub-ships.password))
 
 jobs:
 - name: rebuild-ubuntu-git
   plan:
   - in_parallel:
+    - get: concourse-generics
     - get: base-ubuntu
       trigger: true
     - get: this
       resource: this-git
       trigger: true
+
+  - task: build
+    file: concourse-generics/toolchains/docker/build.yml
+    privileged: true
+    input_mapping:
+      src: this
+    params:
+      CONTEXT: ./ubuntu-git
   - put: ubuntu-git
     params:
-      build: this/ubuntu-git
+      image: image/image.tar
 
 - name: rebuild-ubuntu-jq
   plan:
   - in_parallel:
+    - get: concourse-generics
     - get: base-ubuntu
       trigger: true
     - get: this
       resource: this-jq
       trigger: true
+  - task: build
+    file: concourse-generics/toolchains/docker/build.yml
+    privileged: true
+    input_mapping:
+      src: this
+    params:
+      CONTEXT: ./ubuntu-jq
   - put: ubuntu-jq
     params:
-      build: this/ubuntu-jq
+      image: image/image.tar
