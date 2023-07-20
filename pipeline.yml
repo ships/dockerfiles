@@ -12,6 +12,12 @@ resources:
     uri: https://github.com/ships/dockerfiles
     paths: [ubuntu-jq]
 
+- name: this-alpine-nc
+  type: git
+  source:
+    uri: https://github.com/ships/dockerfiles
+    paths: [alpine-nc]
+
 - name: concourse-generics
   type: git
   source:
@@ -22,6 +28,14 @@ resources:
   source:
     repository: ubuntu
     tag: "20.04"
+    username: ((dockerhub-ships.username))
+    password: ((dockerhub-ships.password))
+
+- name: base-alpine
+  type: registry-image
+  source:
+    repository: alpine
+    tag: "latest"
     username: ((dockerhub-ships.username))
     password: ((dockerhub-ships.password))
 
@@ -41,6 +55,14 @@ resources:
     username: ((dockerhub-ships.username))
     password: ((dockerhub-ships.password))
 
+- name: alpine-nc
+  type: registry-image
+  source:
+    repository: eveships/alpine-nc
+    tag: latest
+    username: ((dockerhub-ships.username))
+    password: ((dockerhub-ships.password))
+
 jobs:
 - name: rebuild-ubuntu-git
   plan:
@@ -48,15 +70,13 @@ jobs:
     - get: concourse-generics
     - get: base-ubuntu
       trigger: true
-    - get: this
+    - get: src
       resource: this-git
       trigger: true
 
   - task: build
     file: concourse-generics/toolchains/docker/build.yml
     privileged: true
-    input_mapping:
-      src: this
     params:
       CONTEXT: ./ubuntu-git
   - put: ubuntu-git
@@ -69,16 +89,33 @@ jobs:
     - get: concourse-generics
     - get: base-ubuntu
       trigger: true
-    - get: this
+    - get: src
       resource: this-jq
       trigger: true
   - task: build
     file: concourse-generics/toolchains/docker/build.yml
     privileged: true
-    input_mapping:
-      src: this
     params:
       CONTEXT: ./ubuntu-jq
   - put: ubuntu-jq
+    params:
+      image: image/image.tar
+
+- name: rebuild-alpine-nc
+  plan:
+  - in_parallel:
+    - get: concourse-generics
+    - get: base-alpine
+      trigger: true
+    - get: src
+      resource: this-alpine-nc
+      trigger: true
+
+  - task: build
+    file: concourse-generics/toolchains/docker/build.yml
+    privileged: true
+    params:
+      CONTEXT: ./alpine-nc
+  - put: alpine-nc
     params:
       image: image/image.tar
