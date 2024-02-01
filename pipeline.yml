@@ -18,6 +18,12 @@ resources:
     uri: https://github.com/ships/dockerfiles
     paths: [alpine-nc]
 
+- name: this-act-plusplus
+  type: git
+  source:
+    uri: https://github.com/ships/dockerfiles
+    paths: [act-plusplus]
+
 - name: concourse-generics
   type: git
   source:
@@ -30,6 +36,12 @@ resources:
     tag: "20.04"
     username: ((dockerhub-ships.username))
     password: ((dockerhub-ships.password))
+
+- name: base-act
+  type: registry-image
+  source:
+    repository: ghcr.io/catthehacker/ubuntu
+    tag: "act-latest"
 
 - name: base-alpine
   type: registry-image
@@ -59,6 +71,14 @@ resources:
   type: registry-image
   source:
     repository: eveships/alpine-nc
+    tag: latest
+    username: ((dockerhub-ships.username))
+    password: ((dockerhub-ships.password))
+
+- name: act-plusplus
+  type: registry-image
+  source:
+    repository: eveships/act-plusplus
     tag: latest
     username: ((dockerhub-ships.username))
     password: ((dockerhub-ships.password))
@@ -98,6 +118,24 @@ jobs:
     params:
       CONTEXT: ./ubuntu-jq
   - put: ubuntu-jq
+    params:
+      image: image/image.tar
+
+- name: rebuild-act-plusplus
+  plan:
+  - in_parallel:
+    - get: concourse-generics
+    - get: base-act
+      trigger: true
+    - get: src
+      resource: this-act-plusplus
+      trigger: true
+  - task: build
+    file: concourse-generics/toolchains/docker/build.yml
+    privileged: true
+    params:
+      CONTEXT: ./act-plusplus
+  - put: act-plusplus
     params:
       image: image/image.tar
 
